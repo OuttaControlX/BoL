@@ -7,6 +7,7 @@ require "VPrediction"
 function OnLoad()
 		VP = VPrediction()
 		ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, Qrange, DAMAGE_MAGIC)
+		ts.name = "Amumu Target"
 		JMinions = minionManager(MINION_JUNGLE, Qrange, myHero)
 		EnemyMinions = minionManager(MINION_ENEMY, Qrange, myHero, MINION_SORT_HEALTH_ASC)
 		
@@ -36,7 +37,6 @@ function OnLoad()
 		Cfg:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 
 		
-        ts.name = "Amumu"
         Cfg:addTS(ts)
 		PrintChat(" >> <font color='#FF0000'>Amumu</font> by OuttaControlX _loaded...")
 end
@@ -50,7 +50,7 @@ function OnTick()
 	Eready = (myHero:CanUseSpell(_E) == READY)
 	Rready = (myHero:CanUseSpell(_R) == READY)
 	Qready = (myHero:CanUseSpell(_Q) == READY)
-	CheckEnemys()
+	WcastControl()
 
 	if Cfg.Combo.scriptActive and Target then
 		if Qready and GetDistance(Target) <= Qrange and Cfg.Combo.useQ then
@@ -86,37 +86,47 @@ function OnTick()
 	
 end
 
-function CheckEnemys()
+function WcastControl()
+	if (GetTickCount() - (Tick or 0) < 1000) or not Wready or (myHero.mana / myHero.maxMana < Cfg.Dmana /100) and not inRecall then return end
+	Tick = GetTickCount()
 	EnemyWrange = false
-	for i, enemy in ipairs(GetEnemyHeroes()) do
-		if enemy and ValidTarget(enemy) then
-			if Cfg.Combo.useW and Wready and not Despair and GetDistance(enemy) <= Wrange and not inRecall and myHero.mana / myHero.maxMana > Cfg.Dmana /100 then
-				CastSpell(_W)
-				EnemyWrange = true
+	
+		if Cfg.Combo.useW then
+			for i, enemy in ipairs(GetEnemyHeroes()) do
+				if enemy and ValidTarget(enemy) and GetDistance(enemy) <= Wrange + 200 then
+						if not Despair then CastSpell(_W) end
+						EnemyWrange = true
+						return
+				end
 			end
-			if GetDistance(enemy) <= Wrange then EnemyWrange = true end
 		end
-	end
-	
-	for i, minion in pairs(JMinions.objects) do
-		if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
-			if not Despair and Cfg.Jung.useW and Wready and myHero.mana / myHero.maxMana > Cfg.Dmana /100 then
-				CastSpell(_W)
-				EnemyWrange = true
-			else EnemyWrange = true end
+		
+		if Cfg.Jung.useW then
+			for i, minion in pairs(JMinions.objects) do
+				if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
+						if not Despair then CastSpell(_W) end
+						EnemyWrange = true
+						TickSuppressor = GetTickCount() + GetLatency()
+						return
+				end
+			end
 		end
-	end
-	
-	for i, minion in pairs(EnemyMinions.objects) do
-		if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
-			if not Despair and Wready and Cfg.Farm.useW and myHero.mana / myHero.maxMana > Cfg.Dmana /100 then
-				CastSpell(_W)
-				EnemyWrange = true
-			else EnemyWrange = true end
+		
+		if Cfg.Farm.useW then
+			for i, minion in pairs(EnemyMinions.objects) do
+				if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
+						if not Despair then CastSpell(_W) end
+						EnemyWrange = true
+						TickSuppressor = GetTickCount() + 50
+						return
+				end
+			end
 		end
+
+	if not EnemyWrange and Despair then
+		CastSpell(_W)
+		return
 	end
-	
-	if not EnemyWrange and Despair then CastSpell(_W) end
 end
 
 function OnGainBuff(unit, buff)
