@@ -106,7 +106,6 @@ function WcastControl()
 				if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
 						if not Despair then CastSpell(_W) end
 						EnemyWrange = true
-						TickSuppressor = GetTickCount() + GetLatency()
 						return
 				end
 			end
@@ -117,7 +116,6 @@ function WcastControl()
 				if minion and minion.valid and not minion.dead and GetDistance(minion) <= Wrange then
 						if not Despair then CastSpell(_W) end
 						EnemyWrange = true
-						TickSuppressor = GetTickCount() + 50
 						return
 				end
 			end
