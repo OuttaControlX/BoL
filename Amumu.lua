@@ -33,8 +33,11 @@ function OnLoad()
 		Cfg.Farm:addParam("useE", "E Tantrum", SCRIPT_PARAM_ONOFF, true)
 		Cfg.Farm:addParam("useW", "Auto Despair", SCRIPT_PARAM_ONOFF, true)
 		
+		Cfg:addSubMenu("Draw Options", "Draw")
+		Cfg.Draw:addParam("Q", "Q Range", SCRIPT_PARAM_ONOFF, true)
+		Cfg.Draw:addParam("E", "E Range", SCRIPT_PARAM_ONOFF, true)
+
 		Cfg:addParam("Dmana", "Despair Mana Manager%",SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
-		Cfg:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 
 		
         Cfg:addTS(ts)
@@ -66,7 +69,7 @@ function OnTick()
 	if Cfg.Jung.JFarm then
 	 	for i, minion in pairs(JMinions.objects) do
 			if minion and minion.valid and not minion.dead and GetDistance(minion) <= 300 then
-				myHero:Attack(minion)
+				--myHero:Attack(minion)
 				if Eready and Cfg.Jung.useE and GetDistance(minion) <= Erange then CastSpell(_E) end
 				if Qready and Cfg.Jung.useQ and GetDistance(minion) <= Qrange then CastSpell(_Q, minion.x, minion.z) end
 			end
@@ -77,7 +80,7 @@ function OnTick()
 	if Cfg.Farm.Farm then
 	 	for i, minion in pairs(EnemyMinions.objects) do
 			if minion and minion.valid and not minion.dead and GetDistance(minion) <= 300 then
-				myHero:Attack(minion)
+				--myHero:Attack(minion)
 				if Eready and Cfg.Jung.useE and GetDistance(minion) <= Erange then CastSpell(_E) end
 				if Qready and Cfg.Jung.useQ and GetDistance(minion) <= Qrange then CastSpell(_Q, minion.x, minion.z) end
 			end
@@ -160,8 +163,8 @@ function AreaEnemyCount(Spot, Range, Killable)
 end
 
 function OnDraw()
-                if not myHero.dead and Cfg.drawcircles then
-                        DrawCircle(myHero.x, myHero.y, myHero.z, Qrange, 0x992D3D)
-						DrawCircle(myHero.x, myHero.y, myHero.z, Erange, 0x19A712)
+                if not myHero.dead then
+                        if Cfg.Draw.Q then DrawCircle(myHero.x, myHero.y, myHero.z, Qrange, 0x992D3D) end
+						if Cfg.Draw.E then DrawCircle(myHero.x, myHero.y, myHero.z, Erange, 0x19A712) end
                         end
 end            
